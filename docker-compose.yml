@@ -1,0 +1,24 @@
+version: '2'
+
+# 3 node cluster
+# If you see exit code 137 (OOM killer) then ensure Docker has access to more resources
+services:
+  cassandra-seed:
+    container_name: cassandra-seed-node
+    image: cassandra:3.11.0
+    ports:
+      - "9042:9042"   # Native transport
+      - "7199:7199"   # JMX
+      - "9160:9160"   # Thrift clients
+
+  
+  # watch next service
+  watch-next-service:
+    image: 
+    environment:
+        - "CASSANDRA_SEED_NODE_01=cassandra-seed-node"
+    ports:
+        - "9000:9000"
+    depends_on:
+        - "cassandra-seed"
+           
