@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 Metro Systems Scala School
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.watchnext.movies.service
 
 import com.watchnext.ServiceConfig
@@ -7,19 +23,25 @@ import com.watchnext.movies.repository.MovieRepository
 import scala.concurrent.{ExecutionContext, Future}
 
 class MovieHandlerService(
-  movieRepository: MovieRepository
-)(implicit executionContext: ExecutionContext) extends MovieService {
+    movieRepository: MovieRepository
+)(implicit executionContext: ExecutionContext)
+    extends MovieService {
 
   override def findById(id: MovieId): Future[Movie] =
     movieRepository.retrieve(id)
 
-  def latestMovie: String = {
-    val urlSource = scala.io.Source.fromURL(
-      s"https://api.themoviedb.org/3/movie/latest?api_key=${ServiceConfig.apiKey}&language=en-US"
-    )
+  private def getJsonResponse(url: String): String = {
+    val urlSource    = scala.io.Source.fromURL(url)
     val jsonResponse = urlSource.mkString
     urlSource.close
     jsonResponse
   }
 
+  def latestMovies: String =
+    getJsonResponse(s"https://api.themoviedb.org/3/movie/latest?api_key=${ServiceConfig.apiKey}&language=en-US")
+
+  def details(id: String): String =
+    getJsonResponse(s"https://api.themoviedb.org/3/movie/${id}?api_key=${ServiceConfig.apiKey}")
+
+  override def addMovie(movie: Movie): Future[MovieId] = movieRepository.store(movie)
 }
