@@ -26,4 +26,6 @@ trait MovieRepository {
 
   def retrieve(id: MovieId): Future[Movie]
 
+  def getAll: Future[List[Movie]]
+
 }

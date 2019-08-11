@@ -21,11 +21,14 @@ object Movies {
   final case class Movie(
       id: String,
       title: String,
-      link: String
   )
 
   final case class MovieId(
       id: String
+  )
+
+  final case class MovieIDs(
+      ids: List[String]
   )
 
 }

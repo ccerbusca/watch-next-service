@@ -49,6 +49,17 @@ class MovieCassandraRepository(connector: CassandraConnection) extends MovieRepo
         case None        => Future.failed(new Exception(s"Could not retrieve movie with id: $id"))
       }
 
+  override def getAll: Future[List[Movie]] =
+    db.Movies.getAll
+      .map(
+        _.map { rawMovie =>
+          for {
+            title <- Movies.Name(rawMovie.title)
+            link <- Movies.Link(rawMovie.link)
+          } yield Movies.Movie(rawMovie.id, title, link, rawMovie.watched)
+        } collect { case Right(movie) => movie }
+      )
+
   override def database: MovieDatabase = new MovieDatabase(connector)
 }
 
@@ -89,11 +100,9 @@ object MovieCassandraRepository {
       update().where(_.Id eqs id).modify(_.Watched.setTo(true)).future()
     }
 
-//    def storeMovie(rawMovie: RawMovie): Future[ResultSet] = {
-//      store(rawMovie)
-//        .consistencyLevel_=(ConsistencyLevel.ALL)
-//        .future()
-//    }
+    def getAll: Future[List[RawMovie]] = {
+      select.all.fetch()
+    }
 
   }
 

@@ -35,6 +35,8 @@ class TestEndpoints extends WordSpec with Matchers with ScalaFutures with Scalat
       }
     }
 
+
+
   }
 
 }

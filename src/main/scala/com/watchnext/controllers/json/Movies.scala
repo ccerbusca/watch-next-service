@@ -16,11 +16,12 @@
 
 package com.watchnext.controllers.json
 
-import com.watchnext.controllers.models.Movies.{Movie, MovieId}
+import com.watchnext.controllers.models.Movies.{Movie, MovieIDs, MovieId}
 import spray.json.DefaultJsonProtocol._
 object Movies {
 
-  implicit val movieFormat   = jsonFormat3(Movie)
+  implicit val movieIDsFormat = jsonFormat1(MovieIDs)
+  implicit val movieFormat   = jsonFormat2(Movie)
   implicit val movieIdFormat = jsonFormat1(MovieId)
 
 }

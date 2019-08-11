@@ -41,7 +41,45 @@ class MovieHandlerService(
     getJsonResponse(s"https://api.themoviedb.org/3/movie/latest?api_key=${ServiceConfig.apiKey}&language=en-US")
 
   def details(id: String): String =
-    getJsonResponse(s"https://api.themoviedb.org/3/movie/${id}?api_key=${ServiceConfig.apiKey}")
+    getJsonResponse(s"https://api.themoviedb.org/3/movie/$id?api_key=${ServiceConfig.apiKey}")
+
+  def search(query: String): String = {
+    import spray.json._
+    import DefaultJsonProtocol._
+    val searchResult = getJsonResponse(
+      s"https://api.themoviedb.org/3/search/movie?query=$query&api_key=${ServiceConfig.apiKey}&language=en-US"
+    ).parseJson.asJsObject
+    val newResult = searchResult.fields.collect {
+      case ("id", value) => "id" -> value
+      case ("title", value) => "title" -> value
+    }.toJson.asJsObject
+    JsObject(
+      newResult.fields + ("link" -> JsString(s"https://www.themoviedb.org/movie/${searchResult.fields("id")}"))
+    ).toString
+  }
+
+  def suggestions: Future[String] = {
+    import spray.json._
+
+    movieRepository.getAll.map { movies =>
+      val watchedMovies = movies.filter(_.watched)
+      val genreIDs = watchedMovies.flatMap { movie =>
+        details(movie.id)
+          .parseJson.asJsObject
+          .fields("genres").asInstanceOf[JsArray]
+          .elements.map(_.asJsObject.fields("id").toString)
+      } groupBy identity mapValues(_.size)
+      val topTwoGenres = {
+        val first = genreIDs.maxBy(_._2)
+        val second = (genreIDs - first._1).maxBy(_._2)
+        List(first._1, second._1)
+      }.mkString(",")
+      getJsonResponse(
+        s"https://api.themoviedb.org/3/discover/movie?api_key=${ServiceConfig.apiKey}" +
+          s"&language=en-US&sort_by=popularity.desc&with_genres=$topTwoGenres"
+      )
+    }
+  }
 
   override def addMovie(movie: Movie): Future[MovieId] = movieRepository.store(movie)
 }
