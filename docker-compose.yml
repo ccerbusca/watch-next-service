@@ -13,12 +13,12 @@ services:
 
   
   # watch next service
-  watch-next-service:
-    image: 
-    environment:
-        - "CASSANDRA_SEED_NODE_01=cassandra-seed-node"
-    ports:
-        - "9000:9000"
-    depends_on:
-        - "cassandra-seed"
+  # watch-next-service:
+  #  image:
+  #  environment:
+  #      - "CASSANDRA_SEED_NODE_01=cassandra-seed-node"
+  #  ports:
+  #      - "9000:9000"
+  #  depends_on:
+   #     - "cassandra-seed"
            

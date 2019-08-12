@@ -25,14 +25,14 @@ libraryDependencies ++= Seq(
 libraryDependencies += "com.dimafeng" %% "testcontainers-scala" % "0.28.0" % "test"
 libraryDependencies += "org.testcontainers" % "cassandra" % "1.11.3" % "test"
 
-libraryDependencies += "com.typesafe.akka" %% "akka-http"   % "10.1.8"
+libraryDependencies += "com.typesafe.akka" %% "akka-http"   % "10.1.9"
 libraryDependencies += "com.typesafe.akka" %% "akka-stream" % "2.5.23"
 libraryDependencies ++= Seq(
-  "com.typesafe.akka" %% "akka-stream-testkit" % "2.5.19",
+  "com.typesafe.akka" %% "akka-stream-testkit" % "2.5.23",
   "com.typesafe.akka" %% "akka-http-testkit" % "10.1.9"
 )
 
-libraryDependencies += "com.typesafe.akka" %% "akka-http-spray-json" % "10.1.8"
+libraryDependencies += "com.typesafe.akka" %% "akka-http-spray-json" % "10.1.9"
 
 libraryDependencies += "org.typelevel" %% "cats-core" % "1.6.1"
 libraryDependencies += "org.typelevel" %% "cats-effect" % "1.3.1"
@@ -43,9 +43,9 @@ scalafmtOnCompile := true
 dockerExposedPorts ++= Seq(9000)
 // scala style during compile
 
-lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
-compileScalastyle := scalastyle.in(Compile).toTask("").value
-(compile in Compile) := ((compile in Compile) dependsOn compileScalastyle).value
+//lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
+//compileScalastyle := scalastyle.in(Compile).toTask("").value
+//(compile in Compile) := ((compile in Compile) dependsOn compileScalastyle).value
 
 // header license
 licenses += ("Apache-2.0", new URL("https://www.apache.org/licenses/LICENSE-2.0.txt"))

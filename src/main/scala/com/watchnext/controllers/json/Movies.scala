@@ -21,7 +21,7 @@ import spray.json.DefaultJsonProtocol._
 object Movies {
 
   implicit val movieIDsFormat = jsonFormat1(MovieIDs)
-  implicit val movieFormat   = jsonFormat2(Movie)
-  implicit val movieIdFormat = jsonFormat1(MovieId)
+  implicit val movieFormat    = jsonFormat2(Movie)
+  implicit val movieIdFormat  = jsonFormat1(MovieId)
 
 }

@@ -20,7 +20,7 @@ object Movies {
 
   final case class Movie(
       id: String,
-      title: String,
+      title: String
   )
 
   final case class MovieId(
