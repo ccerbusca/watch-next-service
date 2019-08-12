@@ -28,4 +28,6 @@ trait MovieRepository {
 
   def getAll: Future[List[Movie]]
 
+  def setWatched(id: MovieId): Future[Boolean]
+
 }

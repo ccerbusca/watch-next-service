@@ -16,16 +16,19 @@
 
 package com.watchnext.movies.service
 
+import com.outworkers.phantom.dsl._
 import com.watchnext.ServiceConfig
+import com.watchnext.cassandra.repositories.MovieCassandraRepository
 import com.watchnext.movies.domain.Movies.{Movie, MovieId}
-import com.watchnext.movies.repository.MovieRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class MovieHandlerService(
-    movieRepository: MovieRepository
+    movieRepository: MovieCassandraRepository
 )(implicit executionContext: ExecutionContext)
     extends MovieService {
+
+  movieRepository.database.create()
 
   override def findById(id: MovieId): Future[Movie] =
     movieRepository.retrieve(id)
@@ -49,15 +52,18 @@ class MovieHandlerService(
     val searchResult = getJsonResponse(
       s"https://api.themoviedb.org/3/search/movie?query=$query&api_key=${ServiceConfig.apiKey}&language=en-US"
     ).parseJson.asJsObject
-    val newResult = searchResult.fields
-      .collect {
-        case ("id", value)    => "id"    -> value
-        case ("title", value) => "title" -> value
-      }
-      .toJson
-      .asJsObject
+    val newResults = searchResult.fields("results").asInstanceOf[JsArray].elements.map {
+      _.asJsObject.fields.collect {
+          case ("id", value) => "id" -> value
+          case ("title", value) => "title" -> value
+        }
+        .toJson
+        .asJsObject
+    }
     JsObject(
-      newResult.fields + ("link" -> JsString(s"https://www.themoviedb.org/movie/${searchResult.fields("id")}"))
+      "results" -> newResults.map { result =>
+        result.fields + ("link" -> JsString(s"https://www.themoviedb.org/movie/${result.fields("id")}"))
+      }.toJson
     ).toString
   }
 
@@ -73,9 +79,11 @@ class MovieHandlerService(
           .elements
           .map(_.asJsObject.fields("id").toString)
       } groupBy identity mapValues (_.size)
+      println(genreIDs)
       val topTwoGenres = {
-        val first  = genreIDs.maxBy(_._2)
+        val first = genreIDs.maxBy(_._2)
         val second = (genreIDs - first._1).maxBy(_._2)
+        println(first, second)
         List(first._1, second._1)
       }.mkString(",")
       getJsonResponse(
@@ -83,6 +91,10 @@ class MovieHandlerService(
           s"&language=en-US&sort_by=popularity.desc&with_genres=$topTwoGenres"
       )
     }
+  }
+
+  def setAsWatched(id: MovieId): Future[Boolean] = {
+    movieRepository.setWatched(id)
   }
 
   override def addMovie(movie: Movie): Future[MovieId] = movieRepository.store(movie)

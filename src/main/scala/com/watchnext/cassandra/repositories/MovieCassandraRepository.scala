@@ -60,6 +60,11 @@ class MovieCassandraRepository(connector: CassandraConnection) extends MovieRepo
         } collect { case Right(movie) => movie }
       )
 
+  override def setWatched(id: MovieId): Future[Boolean] =
+    for {
+      watched <- db.Movies.setAsWatched(id)
+    } yield watched.wasApplied
+
   override def database: MovieDatabase = new MovieDatabase(connector)
 }
 
@@ -117,8 +122,8 @@ object MovieCassandraRepository {
           .`with`(compaction eqs LeveledCompactionStrategy.sstable_size_in_mb(SSTableSizeInMb))
           .and(compression eqs LZ4Compressor.crc_check_chance(0.5))
           .and(comment eqs "testing")
-          .and(read_repair_chance eqs 5d)
-          .and(dclocal_read_repair_chance eqs 5d)
+          .and(read_repair_chance eqs 1d)
+          .and(dclocal_read_repair_chance eqs 1d)
 
       }
     }

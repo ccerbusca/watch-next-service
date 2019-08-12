@@ -22,9 +22,9 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.util.ByteString
 import com.watchnext.controllers.MovieController
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
 
-class TestEndpoints extends WordSpec with Matchers with ScalaFutures with ScalatestRouteTest {
+class TestEndpoints extends WordSpec with Matchers with ScalaFutures with ScalatestRouteTest with BeforeAndAfterAll {
 
   val routes: Route = MovieController.routes
 
@@ -47,6 +47,12 @@ class TestEndpoints extends WordSpec with Matchers with ScalaFutures with Scalat
 
       postRequest ~> routes ~> check {
         responseAs[String] shouldEqual "123"
+      }
+    }
+
+    "succesfully search for a movie" in {
+      Get("/search?q=shawshank") ~> routes ~> check {
+        status shouldEqual StatusCodes.OK
       }
     }
 

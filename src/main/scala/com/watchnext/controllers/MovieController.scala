@@ -52,7 +52,7 @@ object MovieController extends DefaultJsonProtocol with Logging {
             val maybeMovie = for {
               title <- Movies.Name(movie.title)
               link  <- Movies.Link(s"https://www.themoviedb.org/movie/${movie.id}")
-            } yield Movies.Movie(movie.id, title, link, watched = false)
+            } yield Movies.Movie(movie.id.toString, title, link, watched = false)
             maybeMovie.fold(
               _ => complete(StatusCodes.BadRequest),
               movie => complete(movieService.addMovie(movie))
@@ -61,22 +61,23 @@ object MovieController extends DefaultJsonProtocol with Logging {
         }
       } ~
       path("details") {
-        path(IntNumber) { id =>
-          get {
+        post {
+          entity(as[MovieIDs]) { movieIDs =>
             val movieService = new MovieHandlerService(
               new MovieCassandraRepository(CassandraService.connection)
             )
-            complete(movieService.details(id.toString))
+            val result = s"""{"result":[${movieIDs.ids.map(id => movieService.details(id.toString)).mkString(",")}]}"""
+            complete(result)
           }
-        } ~
-          post {
-            entity(as[MovieIDs]) { movieIDs =>
-              val movieService = new MovieHandlerService(
-                new MovieCassandraRepository(CassandraService.connection)
-              )
-              complete(movieIDs.ids.map(movieService.search))
-            }
-          }
+        }
+      } ~
+      path("details" / Segment) { id =>
+        get {
+          val movieService = new MovieHandlerService(
+            new MovieCassandraRepository(CassandraService.connection)
+          )
+          complete(movieService.details(id))
+        }
       } ~
       path("search") {
         get {
@@ -94,6 +95,15 @@ object MovieController extends DefaultJsonProtocol with Logging {
             new MovieCassandraRepository(CassandraService.connection)
           )
           complete(movieService.suggestions)
+        }
+      } ~
+      path("setWatched" / Segment) { id =>
+        patch {
+          val movieService = new MovieHandlerService(
+            new MovieCassandraRepository(CassandraService.connection)
+          )
+          movieService.setAsWatched(id)
+          complete(StatusCodes.OK)
         }
       }
 

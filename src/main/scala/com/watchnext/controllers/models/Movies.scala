@@ -19,7 +19,7 @@ package com.watchnext.controllers.models
 object Movies {
 
   final case class Movie(
-      id: String,
+      id: Int,
       title: String
   )
 
@@ -28,7 +28,7 @@ object Movies {
   )
 
   final case class MovieIDs(
-      ids: List[String]
+      ids: List[Int]
   )
 
 }
