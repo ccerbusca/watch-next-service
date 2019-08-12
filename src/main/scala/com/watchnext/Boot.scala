@@ -28,18 +28,20 @@ object Boot extends Logging {
 
   def main(args: Array[String]): Unit = {
 
-    logger.info(s"[E-Shop] started")
+    logger.info(s"[Watch-Next] started")
 
-    implicit val system            = ActorSystem("Eshop")
+    implicit val system            = ActorSystem("Watch-Next")
     implicit val actorMaterializer = ActorMaterializer()
     implicit val executionContext  = system.dispatcher
+
+    logger.info(s"[Watch-Next] ${ServiceConfig.webBindingInterface} ${ServiceConfig.webBindingPort}")
 
     val routes = MovieController.routes
     val binding: Future[Http.ServerBinding] =
       Http().bindAndHandle(routes, ServiceConfig.webBindingInterface, ServiceConfig.webBindingPort)
     Runtime.getRuntime.addShutdownHook(new Thread() {
       override def run() {
-        logger.info(s"[E-Shop] shutting down ....")
+        logger.info(s"[Watch-Next] shutting down ....")
         binding
           .flatMap(_.unbind())                 // trigger unbinding from the port
           .onComplete(_ => system.terminate()) // and shutdown when done

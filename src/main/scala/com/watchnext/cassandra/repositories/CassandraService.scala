@@ -36,7 +36,7 @@ object CassandraService {
       )
       .noHeartbeat()
       .keySpace(
-        KeySpace("eshop")
+        KeySpace("watchnext")
           .ifNotExists()
           .`with`(
             replication eqs SimpleStrategy.replication_factor(1)
