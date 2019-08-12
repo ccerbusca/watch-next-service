@@ -49,10 +49,13 @@ class MovieHandlerService(
     val searchResult = getJsonResponse(
       s"https://api.themoviedb.org/3/search/movie?query=$query&api_key=${ServiceConfig.apiKey}&language=en-US"
     ).parseJson.asJsObject
-    val newResult = searchResult.fields.collect {
-      case ("id", value) => "id" -> value
-      case ("title", value) => "title" -> value
-    }.toJson.asJsObject
+    val newResult = searchResult.fields
+      .collect {
+        case ("id", value)    => "id"    -> value
+        case ("title", value) => "title" -> value
+      }
+      .toJson
+      .asJsObject
     JsObject(
       newResult.fields + ("link" -> JsString(s"https://www.themoviedb.org/movie/${searchResult.fields("id")}"))
     ).toString
@@ -64,13 +67,14 @@ class MovieHandlerService(
     movieRepository.getAll.map { movies =>
       val watchedMovies = movies.filter(_.watched)
       val genreIDs = watchedMovies.flatMap { movie =>
-        details(movie.id)
-          .parseJson.asJsObject
-          .fields("genres").asInstanceOf[JsArray]
-          .elements.map(_.asJsObject.fields("id").toString)
-      } groupBy identity mapValues(_.size)
+        details(movie.id).parseJson.asJsObject
+          .fields("genres")
+          .asInstanceOf[JsArray]
+          .elements
+          .map(_.asJsObject.fields("id").toString)
+      } groupBy identity mapValues (_.size)
       val topTwoGenres = {
-        val first = genreIDs.maxBy(_._2)
+        val first  = genreIDs.maxBy(_._2)
         val second = (genreIDs - first._1).maxBy(_._2)
         List(first._1, second._1)
       }.mkString(",")

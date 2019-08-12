@@ -34,8 +34,7 @@ object MovieController extends DefaultJsonProtocol with Logging {
   import com.watchnext.controllers.json.Movies._
 
   val routes: Route =
-    path("/latest") {
-      logger.info("1")
+    path("latest") {
       get {
         logger.info("2")
         val movieService = new MovieHandlerService(
@@ -44,56 +43,58 @@ object MovieController extends DefaultJsonProtocol with Logging {
         complete(movieService.latestMovies)
       }
     } ~
-    path("/add") {
-      post {
-        entity(as[Movie]) { movie =>
-          val movieService = new MovieHandlerService(
-            new MovieCassandraRepository(CassandraService.connection)
-          )
-          val maybeMovie = for {
-            title <- Movies.Name(movie.title)
-            link <- Movies.Link(s"https://www.themoviedb.org/movie/${movie.id}")
-          } yield Movies.Movie(movie.id, title, link, watched = false)
-          maybeMovie.fold(
-            _ => complete(StatusCodes.BadRequest),
-            movie => complete(movieService.addMovie(movie))
-          )
+      path("add") {
+        post {
+          entity(as[Movie]) { movie =>
+            val movieService = new MovieHandlerService(
+              new MovieCassandraRepository(CassandraService.connection)
+            )
+            val maybeMovie = for {
+              title <- Movies.Name(movie.title)
+              link  <- Movies.Link(s"https://www.themoviedb.org/movie/${movie.id}")
+            } yield Movies.Movie(movie.id, title, link, watched = false)
+            maybeMovie.fold(
+              _ => complete(StatusCodes.BadRequest),
+              movie => complete(movieService.addMovie(movie))
+            )
+          }
         }
-      }
-    } ~
-    path("/details") {
-      path(IntNumber) { id =>
-        val movieService = new MovieHandlerService(
-          new MovieCassandraRepository(CassandraService.connection)
-        )
-        complete(movieService.details(id.toString))
       } ~
-      post {
-        entity(as[MovieIDs]) { movieIDs =>
+      path("details") {
+        path(IntNumber) { id =>
+          get {
+            val movieService = new MovieHandlerService(
+              new MovieCassandraRepository(CassandraService.connection)
+            )
+            complete(movieService.details(id.toString))
+          }
+        } ~
+          post {
+            entity(as[MovieIDs]) { movieIDs =>
+              val movieService = new MovieHandlerService(
+                new MovieCassandraRepository(CassandraService.connection)
+              )
+              complete(movieIDs.ids.map(movieService.search))
+            }
+          }
+      } ~
+      path("search") {
+        get {
+          parameters('q.?) { text: Option[String] =>
+            val movieService = new MovieHandlerService(
+              new MovieCassandraRepository(CassandraService.connection)
+            )
+            text.fold(complete(StatusCodes.BadRequest))(query => complete(movieService.search(query)))
+          }
+        }
+      } ~
+      path("suggestions") {
+        get {
           val movieService = new MovieHandlerService(
             new MovieCassandraRepository(CassandraService.connection)
           )
-          complete(movieIDs.ids.map(movieService.search))
+          complete(movieService.suggestions)
         }
       }
-    } ~
-    path("/search") {
-      get {
-        parameters('q.?) { text: Option[String] =>
-          val movieService = new MovieHandlerService(
-            new MovieCassandraRepository(CassandraService.connection)
-          )
-          text.fold(complete(StatusCodes.BadRequest))(query => complete(movieService.search(query)))
-        }
-      }
-    } ~
-    path("/suggestions") {
-      get {
-        val movieService = new MovieHandlerService(
-          new MovieCassandraRepository(CassandraService.connection)
-        )
-        complete(movieService.suggestions)
-      }
-    }
 
 }

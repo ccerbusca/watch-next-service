@@ -55,7 +55,7 @@ class MovieCassandraRepository(connector: CassandraConnection) extends MovieRepo
         _.map { rawMovie =>
           for {
             title <- Movies.Name(rawMovie.title)
-            link <- Movies.Link(rawMovie.link)
+            link  <- Movies.Link(rawMovie.link)
           } yield Movies.Movie(rawMovie.id, title, link, rawMovie.watched)
         } collect { case Right(movie) => movie }
       )
