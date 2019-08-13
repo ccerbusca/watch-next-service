@@ -36,7 +36,6 @@ object MovieController extends DefaultJsonProtocol with Logging {
   val routes: Route =
     path("latest") {
       get {
-        logger.info("2")
         val movieService = new MovieHandlerService(
           new MovieCassandraRepository(CassandraService.connection)
         )

@@ -79,11 +79,9 @@ class MovieHandlerService(
           .elements
           .map(_.asJsObject.fields("id").toString)
       } groupBy identity mapValues (_.size)
-      println(genreIDs)
       val topTwoGenres = {
         val first = genreIDs.maxBy(_._2)
         val second = (genreIDs - first._1).maxBy(_._2)
-        println(first, second)
         List(first._1, second._1)
       }.mkString(",")
       getJsonResponse(

@@ -37,12 +37,12 @@ class TestEndpoints extends WordSpec with Matchers with ScalaFutures with Scalat
     }
 
     "successfully add a movie" in {
-      val jsonRequest = ByteString("{\"id\":\"123\", \"title\":\"test\", \"link\": \"https://google.com\"}")
+      val jsonBody = ByteString("{\"id\":123, \"title\":\"test\"}")
 
       val postRequest = HttpRequest(
         HttpMethods.POST,
         uri = "/add",
-        entity = HttpEntity(MediaTypes.`application/json`, jsonRequest)
+        entity = HttpEntity(MediaTypes.`application/json`, jsonBody)
       )
 
       postRequest ~> routes ~> check {
@@ -52,6 +52,38 @@ class TestEndpoints extends WordSpec with Matchers with ScalaFutures with Scalat
 
     "succesfully search for a movie" in {
       Get("/search?q=shawshank") ~> routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+    }
+
+    "succesfully get the details for a movie" in {
+      Get("/details/123") ~> routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+    }
+
+    "successfully get the details of multiple movies" in {
+      val jsonBody = ByteString("{\"ids\":[123, 124]}")
+
+      val postRequest = HttpRequest(
+        HttpMethods.POST,
+        uri = "/details",
+        entity = HttpEntity(MediaTypes.`application/json`, jsonBody)
+      )
+
+      postRequest ~> routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+    }
+
+    "succesfully get suggestions" in {
+      Get("/suggestions") ~> routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+    }
+
+    "successfully set a movie as watched" in {
+      Patch("/setWatched/123") ~> routes ~> check {
         status shouldEqual StatusCodes.OK
       }
     }

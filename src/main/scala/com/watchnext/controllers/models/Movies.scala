@@ -23,10 +23,6 @@ object Movies {
       title: String
   )
 
-  final case class MovieId(
-      id: String
-  )
-
   final case class MovieIDs(
       ids: List[Int]
   )

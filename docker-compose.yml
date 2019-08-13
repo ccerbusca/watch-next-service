@@ -12,13 +12,13 @@ services:
       - "9160:9160"   # Thrift clients
 
   
-  # watch next service
-  # watch-next-service:
-  #  image:
-  #  environment:
-  #      - "CASSANDRA_SEED_NODE_01=cassandra-seed-node"
-  #  ports:
-  #      - "9000:9000"
-  #  depends_on:
-   #     - "cassandra-seed"
+#   #watch next service
+#  watch-next-service:
+#    image: watch-next--service:0.0.1-SNAPSHOT
+#    environment:
+#        - "CASSANDRA_SEED_NODE_01=cassandra-seed-node"
+#    ports:
+#        - "9000:9000"
+#    depends_on:
+#        - "cassandra-seed"
            
